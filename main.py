@@ -3,9 +3,13 @@ import re
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
-from deep_translator import GoogleTranslator
 
-TOKEN = ""
+from translator import Translator
+from config import (
+    TOKEN,
+    AI_INSTRUCTIONS,
+    AI_ASSIST,
+)
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -38,11 +42,12 @@ async def translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.warning("Message was empty after stripping emojis")
         return
 
-    # Log every incoming message
     logger.info(f"[{chat_type}] {user}: {clean_text}")
 
     try:
-        translated = GoogleTranslator(source='auto', target='bn').translate(clean_text)
+        translator = Translator(use_ai=AI_ASSIST, ai_instructions=AI_INSTRUCTIONS)
+        google_translation, ai_assist = translator.translate(clean_text)
+        translated = f"Google Translate: {google_translation} \n AI Assisted Translation: {ai_assist}" if ai_assist else google_translation
 
         if update.message.forward_origin:
             label = "🌐 (forwarded)"
@@ -57,7 +62,7 @@ if __name__ == '__main__':
     application = ApplicationBuilder().token(TOKEN).build()
 
     start_handler = CommandHandler('start', start)
-    # Removed ChatType filter — works in private chats AND groups now
+
     translate_handler = MessageHandler(
         filters.TEXT & (~filters.COMMAND),
         translate
