@@ -1,10 +1,10 @@
 import logging
-import re
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 
 from translator import Translator
+from utils import strip_emojis
 from config import (
     TOKEN,
     AI_INSTRUCTIONS,
@@ -18,8 +18,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-def strip_emojis(text: str) -> str:
-    return re.sub(r'[^\w\s\d\-_\.,!?;:\'"()\[\]{}@#$%&*+=<>/\\|~`^]', '', text, flags=re.UNICODE).strip()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Hello! I'll translate English messages to Bengali!")
@@ -47,7 +45,7 @@ async def translate(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         translator = Translator(use_ai=AI_ASSIST, ai_instructions=AI_INSTRUCTIONS)
         google_translation, ai_assist = translator.translate(clean_text)
-        translated = f"Google Translate: {google_translation} \n AI Assisted Translation: {ai_assist}" if ai_assist else google_translation
+        translated = f"Google Translate: {google_translation} \n \n AI Assisted Translation: {ai_assist}" if ai_assist else google_translation
 
         if update.message.forward_origin:
             label = "🌐 (forwarded)"

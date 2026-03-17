@@ -1,6 +1,7 @@
 from deep_translator import GoogleTranslator
 
-from helper import AIModel
+from helpers.ai_model import AIModel
+from helpers.openrouter import OpenRouter
 
 class Translator:
     def __init__(self, use_ai: bool = False, ai_instructions: str = None):
@@ -8,7 +9,8 @@ class Translator:
         self._ai_translator=None
 
         if use_ai and ai_instructions:
-            self._ai_translator = AIModel(model="qwen2.5:3b", instructions=ai_instructions)
+            # self._ai_translator = AIModel(model="qwen2.5:3b", instructions=ai_instructions)
+            self._ai_translator = OpenRouter(instructions=ai_instructions)
 
         if use_ai and not ai_instructions:
             print("Warning! Need to provide instructions for AI!")
@@ -25,4 +27,8 @@ class Translator:
         secondary_translation = self._ai_translator.prompt(prompt)
 
         print(f"AI Assist: {secondary_translation}")
+
+        if not secondary_translation:
+            return primary_translation, None
+
         return primary_translation, secondary_translation
